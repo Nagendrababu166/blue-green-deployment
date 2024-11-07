@@ -46,5 +46,17 @@ pipeline {
                 }
             }
         }
+                stage('Green Version Deployment') {
+            steps {
+                script {
+                    // Deploy Green version (Apache)
+                    echo "Deploying Green (Apache) version"
+                    sh """
+                        kubectl apply -f k8s/green-deployment.yaml
+                        kubectl apply -f k8s/green-service.yaml
+                    """
+                }
+            }
+        }
     }
 }
