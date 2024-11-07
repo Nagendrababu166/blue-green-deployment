@@ -34,11 +34,15 @@ pipeline {
             }
         }
         
-        stage('List Pods in GKE') {
+        stage('Blue Version Deployment') {
             steps {
                 script {
-                    // Use kubectl to list the pods in the GKE cluster
-                    sh 'kubectl get pods --all-namespaces'
+                    // Deploy Blue version (NGINX)
+                    echo "Deploying Blue (NGINX) version"
+                    sh """
+                        kubectl apply -f k8s/blue-deployment.yaml
+                        kubectl apply -f k8s/blue-service.yaml
+                    """
                 }
             }
         }
