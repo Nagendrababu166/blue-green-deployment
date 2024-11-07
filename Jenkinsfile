@@ -6,6 +6,7 @@ pipeline {
         PROJECT_ID = 'k8s-prod-440909'  // Replace with your GCP project ID
         CLUSTER_NAME = 'prod'  // Replace with your GKE cluster name
         CLUSTER_ZONE = 'us-east1-b'  // Replace with your GKE cluster zone
+        SERVICE_NAME = 'myapp'
     }
     stages {
         stage('Setup GCP Authentication') {
@@ -76,6 +77,27 @@ stage('Verify Green Version Deployment') {
         }
     }
 }
+              stage('Approval to Switch Traffic') {
+            steps {
+                script {
+                    // Manual approval step to confirm the switch
+                    echo "Waiting for manual approval to switch traffic to Green version"
+                    input message: 'Approve switch to Green version?', ok: 'Switch Traffic'
+                }
+            }
+        }
+
+        stage('Switch Traffic to Green Version') {
+            steps {
+                script {
+                    // Update the service to point to the Green version (Apache)
+                    echo "Switching traffic to Green (Apache) version"
+                    sh '''
+                        kubectl patch svc ${SERVICE_NAME} -p '{"spec":{"selector":{"app":"myapp","version":"green"}}}'
+                    '''
+                }
+            }
+        }
 
     }
 }
