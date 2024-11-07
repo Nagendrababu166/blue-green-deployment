@@ -58,5 +58,24 @@ pipeline {
                 }
             }
         }
+stage('Verify Green Version Deployment') {
+    steps {
+        script {
+            // Wait for 30 seconds to give time for the Green pods to spin up
+            echo "Waiting for Green pods to spin up"
+            sh 'sleep 30'
+
+            // Verify Green deployment is running fine
+            echo "Verifying Green (Apache) application"
+            def greenPods = sh(script: 'kubectl get pods -l app=myapp,version=green -o jsonpath="{.items[*].status.phase}"', returnStdout: true).trim()
+
+            if (!greenPods.contains('Running')) {
+                error "Green pods are not running as expected!"
+            }
+            echo "Green application is running successfully"
+        }
+    }
+}
+
     }
 }
