@@ -1,8 +1,7 @@
 pipeline {
     agent any
 
-    environment {
-        GOOGLE_CREDENTIALS = credentials('gke-service-account')  
+    environment { 
         PROJECT_ID = 'k8s-prod-440909'  
         CLUSTER_NAME = 'prod' 
         CLUSTER_ZONE = 'us-east1-b'
