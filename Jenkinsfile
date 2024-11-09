@@ -2,17 +2,16 @@ pipeline {
     agent any
 
     environment {
-        GOOGLE_CREDENTIALS = credentials('gke-service-account')  // Replace with your secret ID
-        PROJECT_ID = 'k8s-prod-440909'  // Replace with your GCP project ID
-        CLUSTER_NAME = 'prod'  // Replace with your GKE cluster name
-        CLUSTER_ZONE = 'us-east1-b'  // Replace with your GKE cluster zone
+        GOOGLE_CREDENTIALS = credentials('gke-service-account')  
+        PROJECT_ID = 'k8s-prod-440909'  
+        CLUSTER_NAME = 'prod' 
+        CLUSTER_ZONE = 'us-east1-b'
         SERVICE_NAME = 'myapp'
     }
     stages {
         stage('Setup GCP Authentication') {
             steps {
                 script {
-                    // Authenticate with GCP using the service account credentials
                     withCredentials([file(credentialsId: 'gke-service-account', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                         sh '''
                             # Authenticate to GCP using the service account key file
@@ -27,7 +26,6 @@ pipeline {
         stage('Get GKE Cluster Credentials') {
             steps {
                 script {
-                    // Get credentials for the GKE cluster
                     sh '''
                         gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${CLUSTER_ZONE} --project ${PROJECT_ID}
                     '''
@@ -38,7 +36,6 @@ pipeline {
         stage('Blue Version Deployment') {
             steps {
                 script {
-                    // Deploy Blue version (NGINX)
                     echo "Deploying Blue (NGINX) version"
                     sh """
                         kubectl apply -f k8s/blue-deployment.yaml
@@ -50,7 +47,6 @@ pipeline {
                 stage('Green Version Deployment') {
             steps {
                 script {
-                    // Deploy Green version (Apache)
                     echo "Deploying Green (Apache) version"
                     sh """
                         kubectl apply -f k8s/green-deployment.yaml
@@ -62,11 +58,8 @@ pipeline {
 stage('Verify Green Version Deployment') {
     steps {
         script {
-            // Wait for 30 seconds to give time for the Green pods to spin up
             echo "Waiting for Green pods to spin up"
             sh 'sleep 30'
-
-            // Verify Green deployment is running fine
             echo "Verifying Green (Apache) application"
             def greenPods = sh(script: 'kubectl get pods -l app=myapp,version=green -o jsonpath="{.items[*].status.phase}"', returnStdout: true).trim()
 
@@ -80,7 +73,6 @@ stage('Verify Green Version Deployment') {
               stage('Approval to Switch Traffic') {
             steps {
                 script {
-                    // Manual approval step to confirm the switch
                     echo "Waiting for manual approval to switch traffic to Green version"
                     input message: 'Approve switch to Green version?', ok: 'Switch Traffic'
                 }
@@ -90,7 +82,6 @@ stage('Verify Green Version Deployment') {
         stage('Switch Traffic to Green Version') {
             steps {
                 script {
-                    // Update the service to point to the Green version (Apache)
                     echo "Switching traffic to Green (Apache) version"
                     sh '''
                         kubectl patch svc ${SERVICE_NAME} -p '{"spec":{"selector":{"app":"myapp","version":"green"}}}'
