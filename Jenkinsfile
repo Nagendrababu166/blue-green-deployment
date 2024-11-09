@@ -14,7 +14,6 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'gke-service-account', variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                         sh '''
-                            # Authenticate to GCP using the service account key file
                             gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
                             gcloud config set project ${PROJECT_ID}
                         '''
